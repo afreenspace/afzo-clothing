@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}My Cart — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="cart-wrap">
+    <h1 class="cart-title">Your Cart</h1>
+    <p class="cart-meta">{{ items|length }} item{{ 's' if items|length!=1 else '' }} in your bag</p>
+    {% if items %}
+      {% for item in items %}
+      <div class="cart-row">
+        <div class="cart-thumb"><img src="{{ item.product.image }}" alt="{{ item.product.name }}"></div>
+        <div>
+          <div class="cart-info-name">{{ item.product.name }}</div>
+          <div class="cart-info-meta">Size: {{ item.size }} · Qty: {{ item.qty }}</div>
+          <div class="cart-info-price">₹{{ item.product.price*item.qty }}</div>
+        </div>
+        <form method="POST" action="/remove-from-cart/{{ item.cart_id }}"><button type="submit" class="cart-del">Remove ×</button></form>
+      </div>
+      {% endfor %}
+      <div class="cart-summary-box">
+        <div class="sum-row"><span class="sum-label">Subtotal</span><span class="sum-val">₹{{ total }}</span></div>
+        <div class="sum-row"><span class="sum-label">Shipping</span><span class="sum-val">{% if total>=5000 %}Free{% else %}₹99{% endif %}</span></div>
+        <div style="height:1px;background:rgba(0,0,0,0.06);margin:16px 0"></div>
+        <div class="sum-row"><span class="sum-total-label">Total</span><span class="sum-total-val">₹{{ total+(0 if total>=5000 else 99) }}</span></div>
+        <button class="checkout-btn" onclick="location.href='/checkout'">Proceed to Checkout →</button>
+      </div>
+    {% else %}
+      <div class="cart-empty-state">
+        <div style="font-size:56px;margin-bottom:20px">🛍️</div>
+        <h2 style="font-family:var(--font-serif);font-size:36px;color:var(--dark);margin-bottom:12px">Your cart is empty</h2>
+        <p style="font-size:13px;color:var(--light);margin-bottom:28px">Find something you love.</p>
+        <a href="/products" class="go-shop">Start Shopping</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{% block title %}AFZO Clothing{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+</head>
+<!-- Loading Spinner -->
+<div id="pageLoader">
+  <div class="loader-logo">AFZ<span>O</span></div>
+  <div class="loader-ring"></div>
+</div>
+
+<body data-logged-in="{{ 'true' if user else 'false' }}">
+<nav class="navbar">
+  <a href="/" class="nav-logo">AFZ<span>O</span></a>
+  <div class="nav-centre">
+    <a href="/products?cat=all" class="nav-item">Wear</a>
+    <a href="/products?cat=tops" class="nav-item">Tops</a>
+    <a href="/products?cat=shoes" class="nav-item">Shoes</a>
+    <a href="/products?cat=accessories" class="nav-item">Accessories</a>
+    <a href="/products?cat=ethnic" class="nav-item">Ethnic</a>
+    <a href="/collections" class="nav-item">Collections</a>
+    <a href="/feedback" class="nav-item" style="color:var(--terra)">✦ Feedback</a>
+    <a href="/outfit-builder" class="nav-item" style="color:var(--terra)" {% if not user %}onclick="event.preventDefault();openLogin('login')"{% endif %}>✦ Outfit Builder</a>
+    <a href="#" class="nav-item" style="color:var(--terra)" onclick="toggleChat()">✦ AI Chatbot</a>
+  </div>
+  <div class="nav-right">
+    <button class="dark-toggle" id="darkToggleBtn" onclick="toggleDark()" title="Toggle dark mode">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="nav-icon-btn" onclick="openSearch()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <a href="/wishlist" class="nav-icon-btn" {% if not user %}onclick="event.preventDefault();openLogin('login')"{% endif %}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </a>
+    {% if user %}
+    <a href="/cart" class="nav-icon-btn" style="text-decoration:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </a>
+    <a href="/orders" class="nav-item" style="font-size:11px">Orders</a>
+    <span class="nav-user-name">{{ user.name.split()[0] }}</span>
+    <a href="/logout" class="nav-logout">Log out</a>
+    {% else %}
+    <button class="nav-icon-btn" onclick="openLogin('login')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    </button>
+    <button class="nav-login-btn" onclick="openLogin('login')">Login</button>
+    {% endif %}
+    <!-- Mobile burger -->
+    <button class="nav-burger" id="navBurger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-overlay"></div>
+  <div class="drawer-panel">
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <a href="/products?cat=all"  class="drawer-link">All Wear</a>
+    <a href="/products?cat=tops" class="drawer-link">Tops</a>
+    <a href="/products?cat=shoes" class="drawer-link">Shoes</a>
+    <a href="/products?cat=accessories" class="drawer-link">Accessories</a>
+    <a href="/collections" class="drawer-link">Collections</a>
+    <a href="/outfit-builder" class="drawer-link" style="color:var(--terra)">✦ Outfit Builder</a>
+    {% if user %}
+    <a href="/orders"  class="drawer-link">My Orders</a>
+    <a href="/wishlist" class="drawer-link">Wishlist</a>
+    <a href="/cart"   class="drawer-link">Cart</a>
+    <a href="/logout" class="drawer-link" style="color:var(--light)">Log out</a>
+    {% else %}
+    <button class="drawer-link" onclick="closeDrawer();openLogin('login')" style="text-align:left;background:none;border:none;font-family:var(--font-serif);font-size:22px;color:var(--terra);padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer;width:100%">Sign In →</button>
+    {% endif %}
+  </div>
+</div>
+{% block content %}{% endblock %}
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-logo">AFZ<span>O</span></div>
+      <p class="footer-tagline">Minimal, timeless clothing crafted for women who know who they are.</p>
+    </div>
+    <div class="footer-nav-col">
+      <div class="footer-nav-group">
+        <div class="footer-nav-heading">Shop</div>
+        <div class="footer-nav-links">
+          <a href="/products?cat=ethnic" class="footer-nav-link">Ethnic Wear</a>
+          <a href="/collections" class="footer-nav-link">Collections</a>
+          <a href="/collections" class="footer-nav-link">Accessories</a>
+          <a href="/collections" class="footer-nav-link">Shoes</a>
+          <a href="/collections" class="footer-nav-link">Jackets</a>
+          <a href="/collections" class="footer-nav-link">Summer Wear</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-right">
+      <div class="footer-socials">
+        <span class="footer-social-btn">IG</span>
+        <span class="footer-social-btn">PI</span>
+        <span class="footer-social-btn">TK</span>
+      </div>
+      <div class="footer-payments">
+        <span class="pay-badge">Visa</span>
+        <span class="pay-badge">MC</span>
+        <span class="pay-badge">UPI</span>
+        <span class="pay-badge">PayPal</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2024 AFZO Clothing — All rights reserved</span>
+    <div class="footer-policy-links">
+      <a href="/feedback" class="footer-policy-link">Feedback</a>
+      <a href="#" class="footer-policy-link">Privacy</a>
+      <a href="#" class="footer-policy-link">Terms</a>
+      <a href="#" class="footer-policy-link">Returns</a>
+    </div>
+  </div>
+</footer>
+<div class="popup-overlay" id="loginPopup">
+  <div class="popup">
+    <div class="popup-top">
+      <div class="popup-logo">AFZ<span>O</span></div>
+      <div class="popup-tagline">Minimal · Timeless · Yours</div>
+      <button class="popup-close-x" onclick="closeLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="popup-body">
+      <div class="popup-tabs">
+        <button class="ptab active" id="tabLogin">Sign In</button>
+        <button class="ptab" id="tabSignup">Create Account</button>
+      </div>
+      <div class="ptab-panel active" id="panelLogin">
+        <form id="loginForm" style="display:flex;flex-direction:column;gap:14px">
+          <div class="f-group"><label class="f-label">Email</label><input class="f-input" type="email" name="email" placeholder="your@email.com" required></div>
+          <div class="f-group"><label class="f-label">Password</label><input class="f-input" type="password" name="password" placeholder="••••••••" required></div>
+          <button type="submit" class="f-submit">Sign In</button>
+        </form>
+        <p class="f-switch">No account? <span class="f-switch-link" onclick="switchTab('signup')">Create one →</span></p>
+      </div>
+      <div class="ptab-panel" id="panelSignup">
+        <form id="signupForm" style="display:flex;flex-direction:column;gap:14px">
+          <div class="f-group"><label class="f-label">Full Name</label><input class="f-input" type="text" name="full_name" placeholder="Your Name" required></div>
+          <div class="f-group"><label class="f-label">Email</label><input class="f-input" type="email" name="email" placeholder="your@email.com" required></div>
+          <div class="f-group"><label class="f-label">Password</label><input class="f-input" type="password" name="password" placeholder="Min. 6 characters" required></div>
+          <div class="f-group"><label class="f-label">Confirm Password</label><input class="f-input" type="password" name="confirm_password" placeholder="Repeat password" required></div>
+          <button type="submit" class="f-submit">Create Account</button>
+        </form>
+        <p class="f-switch">Have an account? <span class="f-switch-link" onclick="switchTab('login')">Sign in →</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Modal -->
+<div class="popup-overlay" id="searchPopup">
+  <div class="popup">
+    <div class="popup-top">
+      <div class="popup-logo">AFZ<span>O</span></div>
+      <div class="popup-tagline">Find Your Style</div>
+      <button class="popup-close-x" onclick="closeSearch()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="popup-body">
+      <form id="searchForm" action="/products" method="GET" style="display:flex;flex-direction:column;gap:14px">
+        <div class="f-group">
+          <label class="f-label">Search Products</label>
+          <input class="f-input" type="text" name="q" placeholder="e.g., linen dress, summer collection..." required>
+        </div>
+        <button type="submit" class="f-submit">Search</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── AFZO Style Assistant Chatbot ─────────────────────── -->
+<div id="chatbotBtn" onclick="toggleChat()" title="Style Assistant">
+  <div class="chatbot-avatar">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
+      <!-- Face -->
+      <circle cx="50" cy="45" r="28" fill="#F5DEB3"/>
+      <!-- Hair -->
+      <ellipse cx="50" cy="22" rx="28" ry="14" fill="#3D2B1F"/>
+      <ellipse cx="28" cy="38" rx="8" ry="18" fill="#3D2B1F"/>
+      <ellipse cx="72" cy="38" rx="8" ry="18" fill="#3D2B1F"/>
+      <!-- Eyes -->
+      <ellipse cx="41" cy="43" rx="4" ry="4.5" fill="#3D2B1F"/>
+      <ellipse cx="59" cy="43" rx="4" ry="4.5" fill="#3D2B1F"/>
+      <circle cx="42.5" cy="41.5" r="1.5" fill="#fff"/>
+      <circle cx="60.5" cy="41.5" r="1.5" fill="#fff"/>
+      <!-- Blush -->
+      <ellipse cx="36" cy="52" rx="5" ry="3" fill="#FFB6C1" opacity="0.6"/>
+      <ellipse cx="64" cy="52" rx="5" ry="3" fill="#FFB6C1" opacity="0.6"/>
+      <!-- Smile -->
+      <path d="M41 56 Q50 64 59 56" stroke="#C8775A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- Body -->
+      <ellipse cx="50" cy="85" rx="22" ry="16" fill="#C8775A"/>
+      <!-- Collar -->
+      <path d="M38 72 Q50 80 62 72" stroke="#fff" stroke-width="2" fill="none"/>
+    </svg>
+    <span class="chatbot-ping"></span>
+  </div>
+</div>
+<div style="position:fixed;bottom:10px;right:10px;width:auto;text-align:center;z-index:9999;pointer-events:none">
+  <span style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);font-weight:600;background:#fff;padding:4px 12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">Style Help</span>
+</div>
+
+<div id="chatbotPopup" class="chatbot-popup">
+  <div class="chatbot-header">
+    <div class="chatbot-header-left">
+      <div class="chatbot-header-avatar">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+          <circle cx="50" cy="45" r="28" fill="#F5DEB3"/>
+          <ellipse cx="50" cy="22" rx="28" ry="14" fill="#3D2B1F"/>
+          <ellipse cx="28" cy="38" rx="8" ry="18" fill="#3D2B1F"/>
+          <ellipse cx="72" cy="38" rx="8" ry="18" fill="#3D2B1F"/>
+          <ellipse cx="41" cy="43" rx="4" ry="4.5" fill="#3D2B1F"/>
+          <ellipse cx="59" cy="43" rx="4" ry="4.5" fill="#3D2B1F"/>
+          <circle cx="42.5" cy="41.5" r="1.5" fill="#fff"/>
+          <circle cx="60.5" cy="41.5" r="1.5" fill="#fff"/>
+          <ellipse cx="36" cy="52" rx="5" ry="3" fill="#FFB6C1" opacity="0.6"/>
+          <ellipse cx="64" cy="52" rx="5" ry="3" fill="#FFB6C1" opacity="0.6"/>
+          <path d="M41 56 Q50 64 59 56" stroke="#C8775A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <ellipse cx="50" cy="85" rx="22" ry="16" fill="#C8775A"/>
+          <path d="M38 72 Q50 80 62 72" stroke="#fff" stroke-width="2" fill="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="chatbot-name">Zara ✨</div>
+        <div class="chatbot-status">● Online — AFZO Style Assistant</div>
+      </div>
+    </div>
+    <button onclick="toggleChat()" class="chatbot-close-btn" title="Close chat" aria-label="Close chat">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="chatbot-messages" id="chatMessages">
+    <div class="chat-msg bot">
+      <div class="chat-bubble">Hi! I'm Zara 👗✨ AFZO's personal style assistant! I can help you with outfit ideas for any occasion. What are you dressing up for today?</div>
+    </div>
+    <div class="chat-quick-replies" id="quickReplies">
+      <button onclick="quickReply('Date Night 🌙')">Date Night 🌙</button>
+      <button onclick="quickReply('Wedding 💍')">Wedding 💍</button>
+      <button onclick="quickReply('Birthday 🎂')">Birthday 🎂</button>
+      <button onclick="quickReply('Office 💼')">Office 💼</button>
+      <button onclick="quickReply('Casual Day 🌸')">Casual Day 🌸</button>
+      <button onclick="quickReply('Ethnic Look 🪡')">Ethnic Look 🪡</button>
+    </div>
+  </div>
+
+  <div class="chatbot-upload-bar">
+    <label for="photoUpload" class="upload-label" title="Upload your photo for outfit advice">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </label>
+    <input type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+    <input type="text" id="chatInput" class="chatbot-input" placeholder="Ask me anything about style..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()" class="chatbot-send-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<style>
+#chatbotBtn {
+  position: fixed;
+  bottom: 28px;
+  right: 10px !important;
+  left: auto !important;
+  width: 88px !important;
+  height: 88px !important;
+  background: linear-gradient(135deg, #C8775A, #D4936F);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(200,119,90,0.55);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+#chatbotBtn:hover { transform: scale(1.1); box-shadow: 0 12px 40px rgba(200,119,90,0.65); }
+.chatbot-avatar { position: relative; display: flex; align-items: center; justify-content: center; }
+.chatbot-avatar svg { width: 88px !important; height: 88px !important; }
+.chatbot-ping {
+  position: absolute;
+  top: -2px; right: -2px;
+  width: 14px; height: 14px;
+  background: #27ae60;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  animation: ping 1.5s infinite;
+}
+@keyframes ping { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.7} }
+
+.chatbot-popup {
+  position: fixed;
+  bottom: 115px;
+  right: 28px;
+  left: auto;
+  width: 600px;
+  height: 700px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(42,34,32,0.2);
+  display: none;
+  flex-direction: column;
+  z-index: 9998;
+  overflow: hidden;
+  animation: popUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.chatbot-popup.open { display: flex; }
+@keyframes popUp { from{transform:scale(0.8) translateY(20px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+
+.chatbot-header {
+  position: relative;
+  background: linear-gradient(135deg, #C8775A, #D4936F);
+  padding: 18px 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.chatbot-header-left { display: flex; align-items: center; gap: 10px; }
+.chatbot-header-avatar {
+  width: 90px; height: 90px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+.chatbot-name { color: #fff; font-weight: 600; font-size: 14px; }
+.chatbot-status { color: rgba(255,255,255,0.85); font-size: 10px; margin-top: 1px; }
+.chatbot-close-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(200,119,90,0.25);
+  color: #C8775A;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chatbot-close-btn:hover { background: rgba(255,255,255,1); }
+.chatbot-close-btn svg { width: 14px; height: 14px; }
+
+.chatbot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #FDFAF7;
+}
+.chat-msg { display: flex; }
+.chat-msg.bot { justify-content: flex-start; }
+.chat-msg.user { justify-content: flex-end; }
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.chat-msg.bot .chat-bubble { background: #fff; color: #2A2220; border-radius: 4px 16px 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.chat-msg.user .chat-bubble { background: linear-gradient(135deg,#C8775A,#D4936F); color: #fff; border-radius: 16px 16px 4px 16px; }
+
+.chat-quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chat-quick-replies button {
+  background: #fff;
+  border: 1px solid var(--terra, #C8775A);
+  color: var(--terra, #C8775A);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chat-quick-replies button:hover { background: var(--terra,#C8775A); color: #fff; }
+
+.chatbot-upload-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid #f0ebe6;
+  background: #fff;
+  flex-shrink: 0;
+}
+.upload-label {
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.upload-label:hover { color: #C8775A; background: #fdf5f2; }
+.chatbot-input {
+  flex: 1;
+  border: 1px solid #e8e0db;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  background: #FDFAF7;
+}
+.chatbot-input:focus { border-color: #C8775A; }
+.chatbot-send-btn {
+  background: linear-gradient(135deg,#C8775A,#D4936F);
+  border: none;
+  color: #fff;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.chatbot-send-btn:hover { transform: scale(1.1); }
+.chat-typing { display: flex; align-items: center; gap: 4px; padding: 10px 14px; }
+.chat-typing span { width: 7px; height: 7px; background: #C8775A; border-radius: 50%; animation: bounce 1s infinite; }
+.chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+</style>
+
+<script>
+// ── Chatbot Logic ────────────────────────────────────────
+function toggleChat() {
+  const popup = document.getElementById('chatbotPopup');
+  popup.classList.toggle('open');
+  if (popup.classList.contains('open')) {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function quickReply(text) {
+  document.getElementById('quickReplies')?.remove();
+  addMessage(text, 'user');
+  setTimeout(() => respond(text), 600);
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  document.getElementById('quickReplies')?.remove();
+  addMessage(text, 'user');
+  setTimeout(() => respond(text), 600);
+}
+
+function addMessage(text, who) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${who}`;
+  div.innerHTML = `<div class="chat-bubble">${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot';
+  div.id = 'typingIndicator';
+  div.innerHTML = `<div class="chat-bubble chat-typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function respond(text) {
+  showTyping();
+  const t = text.toLowerCase();
+  let reply = '';
+
+  if (t.includes('date') || t.includes('night') || t.includes('romantic')) {
+    reply = "For a date night 🌙 I'd recommend our <b>Camel Belted Blazer</b> paired with slim trousers. Add our <b>Gold Stacked Bracelet Set</b> and you're stunning! Check Blazers → Camel Belted.";
+  } else if (t.includes('wedding') || t.includes('bride') || t.includes('shaadi')) {
+    reply = "For a wedding 💍 our <b>Ethnic collection</b> has gorgeous options! The <b>Plum Gold Bridal Lehenga</b> or <b>Sage Green Anarkali Gown</b> are showstoppers. Visit the Ethnic Wear section!";
+  } else if (t.includes('birthday') || t.includes('bday') || t.includes('party')) {
+    reply = "For your birthday 🎂 go bold! Try our <b>Burgundy Long Blazer</b> with wide leg trousers. Add the <b>Silver Figaro Chain Necklace</b> and you'll own the room! 🥳";
+  } else if (t.includes('office') || t.includes('work') || t.includes('formal') || t.includes('business')) {
+    reply = "For office 💼 our <b>Grey Striped Blazer</b> or <b>Cream One-Button Blazer</b> are perfect. Pair with our <b>Beige Wide Leg Trousers</b>. Professional and chic! ✨";
+  } else if (t.includes('casual') || t.includes('everyday') || t.includes('daily')) {
+    reply = "For a casual day 🌸 try our <b>Tops collection</b> — the <b>Khaki Oversized Crop Tee</b> or <b>Pink Polo Top</b> with wide leg trousers looks amazing and effortless!";
+  } else if (t.includes('ethnic') || t.includes('indian') || t.includes('traditional') || t.includes('desi') || t.includes('eid') || t.includes('festival')) {
+    reply = "For ethnic looks 🪡 our <b>Ethnic Wear</b> section has stunning pieces! From the <b>Olive Green Sharara Set</b> to the <b>Mint Floral Jacket Lehenga</b> — all absolutely gorgeous! 🌸";
+  } else if (t.includes('summer') || t.includes('beach') || t.includes('vacation') || t.includes('holiday')) {
+    reply = "For summer/vacation 🌊 check our <b>Summer Wear</b> collection! The <b>Tropical Leaf Print Beach Set</b> or <b>Ivory Floral Maxi Dress</b> are perfect for beach days! ☀️";
+  } else if (t.includes('shoe') || t.includes('footwear') || t.includes('sandal') || t.includes('heels')) {
+    reply = "For shoes 👠 we have gorgeous options! The <b>Cream Chain Platform Loafers</b> for formal, <b>Sage Green Suede Sneakers</b> for casual, and <b>Boho Straw Sandals</b> for summer!";
+  } else if (t.includes('bag') || t.includes('purse') || t.includes('handbag')) {
+    reply = "For bags 👜 check our Accessories! The <b>Brown Monogram Tote</b> for work, <b>Plum Crossbody Bag</b> for evenings, and <b>Black Canvas Crossbody</b> for everyday use!";
+  } else if (t.includes('colour') || t.includes('color') || t.includes('what colour')) {
+    reply = "This season's trending colours at AFZO are <b>burgundy, olive green, camel, cream and sage</b>! They're timeless and mix-and-match perfectly with everything in our collection 🎨";
+  } else if (t.includes('size') || t.includes('fit') || t.includes('measure')) {
+    reply = "Our sizes range from <b>XS to XL</b>. We follow standard sizing — if you're between sizes, size up for a relaxed fit or size down for a fitted look. Need help with a specific item? 😊";
+  } else if (t.includes('price') || t.includes('budget') || t.includes('cheap') || t.includes('affordable')) {
+    reply = "We have something for every budget! <b>Tops from ₹499</b>, <b>Summer wear from ₹799</b>, <b>Blazers from ₹1999</b> and <b>Ethnic wear from ₹3499</b>. Great quality always! 💕";
+  } else if (t.includes('hello') || t.includes('hi') || t.includes('hey') || t.includes('hii')) {
+    reply = "Hii! 👋✨ I'm Zara, AFZO's style assistant! Tell me what occasion you're dressing for and I'll help you find the perfect outfit! 💃";
+  } else if (t.includes('thank') || t.includes('thanks') || t.includes('ty')) {
+    reply = "You're so welcome! 🤍 Come back anytime you need styling help. You're going to look absolutely amazing! ✨";
+  } else if (t.includes('photo') || t.includes('picture') || t.includes('image') || t.includes('upload')) {
+    reply = "You can upload your photo using the 📷 icon below! Share your current outfit or body type and I'll suggest what styles from AFZO would suit you best! 🌸";
+  } else {
+    reply = "That sounds fun! 😊 Tell me more about the occasion — is it daytime or evening? Formal or casual? I'll find the perfect AFZO outfit for you! 💕";
+  }
+
+  setTimeout(() => {
+    removeTyping();
+    addMessage(reply, 'bot');
+  }, 1200);
+}
+
+function handlePhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const msgs = document.getElementById('chatMessages');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg user';
+    div.innerHTML = `<div class="chat-bubble" style="padding:6px"><img src="${e.target.result}" style="max-width:180px;border-radius:10px;display:block"></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      addMessage("Love your style! 📸✨ Based on your photo, I'd suggest trying our <b>Blazer collection</b> for a polished look, or our <b>Summer Wear</b> for something relaxed and chic. What's the occasion? 💕", 'bot');
+    }, 1500);
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+</script>
+
+<script src="{{ url_for('static',filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

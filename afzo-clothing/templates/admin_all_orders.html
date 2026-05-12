@@ -1,0 +1,74 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>All Orders — AFZO Admin</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:#F4EFE9;color:var(--dark)}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:var(--font-serif);font-size:20px;letter-spacing:5px;text-transform:uppercase;color:var(--dark)}
+.topbar-logo span{color:var(--terra)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-badge{font-size:10px;letter-spacing:2px;text-transform:uppercase;background:var(--terra);color:#fff;padding:5px 14px;border-radius:3px}
+.topbar-link{font-size:11px;color:var(--light);letter-spacing:1px;text-decoration:none;transition:color .2s}
+.topbar-link:hover{color:var(--terra)}
+.wrap{max-width:1280px;margin:0 auto;padding:32px}
+.dash-title{font-family:var(--font-serif);font-size:36px;color:var(--dark);margin-bottom:4px}
+.dash-sub{font-size:12px;color:var(--light);margin-bottom:32px}
+.table-card{background:#fff;border-radius:6px;padding:24px 28px;border:1px solid var(--border-lt);margin-bottom:24px}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.table-title{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mid);font-weight:500}
+table{width:100%;border-collapse:collapse}
+th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--light);padding:10px 12px;text-align:left;border-bottom:1px solid var(--border-lt);font-weight:500}
+td{font-size:12px;color:var(--mid);padding:12px 12px;border-bottom:1px solid var(--border-lt)}
+tr:last-child td{border-bottom:none}
+.clickable-row{cursor:pointer}
+.clickable-row:hover td{background:#FDFAF7 !important}
+.td-name{color:var(--dark)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.badge-completed{background:rgba(39,174,96,0.1);color:#27ae60}
+.badge-pending{background:rgba(243,156,18,0.1);color:#e67e22}
+.badge-shipped{background:rgba(52,152,219,0.1);color:#2980b9}
+.back-btn{display:inline-block;padding:12px 24px;border:1px solid var(--border);border-radius:4px;text-decoration:none;font-size:12px;color:var(--mid);transition:all .2s;margin-bottom:24px}
+.back-btn:hover{background:var(--terra);color:#fff;border-color:var(--terra)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo">AFZ<span>O</span> <span style="font-size:12px;letter-spacing:2px;color:var(--light);font-family:var(--font-sans)">/Admin</span></div>
+  <div class="topbar-right">
+    <span class="topbar-badge">Admin</span>
+    <a href="/admin/dashboard" class="topbar-link">← Dashboard</a>
+    <a href="/admin/logout" class="topbar-link">Logout →</a>
+  </div>
+</div>
+<div class="wrap">
+  <a href="/admin/dashboard" class="back-btn">← Back to Dashboard</a>
+  <h1 class="dash-title">All Orders</h1>
+  <p class="dash-sub">Complete order history — AFZO Clothing</p>
+
+  <div class="table-card">
+    <div class="table-header"><div class="table-title">Orders</div><div style="font-size:11px;color:var(--light)">{{ all_orders|length }} total</div></div>
+    <table><thead><tr><th>#</th><th>Customer</th><th>Product</th><th>Price</th><th>Qty</th><th>Size</th><th>Status</th><th>Date</th></tr></thead><tbody>
+    {% for o in all_orders %}
+    <tr class="clickable-row" data-url="/admin/order/{{ o[0] }}">
+      <td style="color:var(--light)">#{{ o[0] }}</td>
+      <td><div class="td-name">{{ o[1] }}</div><div style="font-size:10px;color:var(--light)">{{ o[2] }}</div></td>
+      <td class="td-name">{{ o[3] }}</td>
+      <td style="color:var(--terra);font-weight:500">₹{{ o[4]|int }}</td>
+      <td>{{ o[5] }}</td>
+      <td>{{ o[6] }}</td>
+      <td><span class="badge badge-{{ o[7] }}">{{ o[7] }}</span></td>
+      <td style="color:var(--light);font-size:11px">{{ o[8][:10] if o[8] else 'N/A' }}</td>
+    </tr>
+    {% endfor %}
+    {% if not all_orders %}<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--light)">No orders yet</td></tr>{% endif %}
+    </tbody></table>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.clickable-row').forEach(row => {
+  row.addEventListener('click', function() {
+    window.location = this.dataset.url;
+  });
+});
+</script>
+</body></html>

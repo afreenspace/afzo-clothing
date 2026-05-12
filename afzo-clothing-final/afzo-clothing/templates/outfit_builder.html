@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Outfit Builder — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page">
+<div style="padding:40px 40px 0;border-bottom:1px solid var(--border-lt);background:#fff">
+  <span style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--terra)">Exclusive Feature</span>
+  <h1 style="font-family:var(--font-serif);font-size:48px;color:var(--dark);margin:8px 0 4px;font-weight:300">Outfit Builder</h1>
+  <p style="font-size:13px;color:var(--light);margin-bottom:24px">Mix and match pieces to create your perfect look. Click any item to add it to your outfit.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - var(--nav-h) - 120px)">
+  <div style="padding:32px 40px;border-right:1px solid var(--border-lt)">
+    {% for section_name, section_items, slot in [('Tops & Dresses', tops, 'top'),('Bottoms', bottoms, 'bottom'),('Shoes', shoes, 'shoes'),('Accessories', accessories, 'accessory')] %}
+    <div style="margin-bottom:36px">
+      <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--light);margin-bottom:16px;font-weight:500">{{ section_name }}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        {% for p in section_items %}
+        <div class="ob-item" data-id="{{ p.id }}" data-name="{{ p.name }}" data-price="{{ p.price }}" data-img="{{ p.image }}" data-slot="{{ slot }}" onclick="selectItem(this,'{{ slot }}')" style="cursor:pointer;border-radius:4px;overflow:hidden;border:2px solid transparent;transition:all .25s;background:var(--beige)">
+          <div style="aspect-ratio:2/3;overflow:hidden"><img src="{{ p.image }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="padding:8px;font-size:11px;color:var(--dark)">{{ p.name }}</div>
+          <div style="padding:0 8px 8px;font-size:11px;color:var(--terra)">₹{{ p.price }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="background:#fff;padding:32px 28px;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;border-left:1px solid var(--border-lt)">
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mid);margin-bottom:24px;font-weight:500">Your Outfit</div>
+    {% for slot,label,emoji in [('top','Top / Dress','👗'),('bottom','Bottom','👖'),('shoes','Shoes','👠'),('accessory','Accessory','✨')] %}
+    <div style="margin-bottom:16px;border:1px solid var(--border-lt);border-radius:4px;overflow:hidden" id="slot-{{ slot }}">
+      <div style="background:var(--beige);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mid)">{{ emoji }} {{ label }}</span>
+        <button onclick="clearSlot('{{ slot }}')" style="font-size:10px;color:var(--light);background:none;border:none;cursor:pointer">Clear</button>
+      </div>
+      <div id="slot-{{ slot }}-content" style="padding:14px;min-height:60px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:12px;color:var(--light);font-style:italic">Click an item to add →</span>
+      </div>
+    </div>
+    {% endfor %}
+    <div style="height:1px;background:var(--border-lt);margin:20px 0"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mid)">Outfit Total</span>
+      <span style="font-family:var(--font-serif);font-size:28px;color:var(--dark)" id="outfitTotal">₹0</span>
+    </div>
+    <button onclick="addAllToCart()" style="width:100%;padding:14px;background:var(--terra);color:#fff;border:none;border-radius:3px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:500;cursor:pointer;margin-bottom:10px">Add Outfit to Cart</button>
+    <button onclick="clearAll()" style="width:100%;padding:12px;background:none;color:var(--light);border:1px solid var(--border);border-radius:3px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer">Clear All</button>
+  </div>
+</div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const outfit={top:null,bottom:null,shoes:null,accessory:null};
+function selectItem(el,slot){document.querySelectorAll('.ob-item[data-slot="'+slot+'"]').forEach(i=>i.style.borderColor='transparent');el.style.borderColor='var(--terra)';outfit[slot]={id:el.dataset.id,name:el.dataset.name,price:parseFloat(el.dataset.price),img:el.dataset.img};updatePanel();}
+function clearSlot(slot){outfit[slot]=null;document.querySelectorAll('.ob-item[data-slot="'+slot+'"]').forEach(i=>i.style.borderColor='transparent');updatePanel();}
+function clearAll(){Object.keys(outfit).forEach(k=>outfit[k]=null);document.querySelectorAll('.ob-item').forEach(i=>i.style.borderColor='transparent');updatePanel();}
+function updatePanel(){let total=0;['top','bottom','shoes','accessory'].forEach(slot=>{const c=document.getElementById('slot-'+slot+'-content');if(outfit[slot]){total+=outfit[slot].price;c.innerHTML='<img src="'+outfit[slot].img+'" style="width:48px;height:60px;object-fit:cover;border-radius:3px;flex-shrink:0"><div><div style="font-size:12px;color:var(--dark);margin-bottom:3px">'+outfit[slot].name+'</div><div style="font-size:12px;color:var(--terra);font-weight:500">₹'+outfit[slot].price+'</div></div>';}else{c.innerHTML='<span style="font-size:12px;color:var(--light);font-style:italic">Click an item to add →</span>';}});document.getElementById('outfitTotal').textContent='₹'+total;}
+async function addAllToCart(){const selected=Object.values(outfit).filter(Boolean);if(selected.length===0){showToast('Please select at least one item!');return;}let added=0;for(const item of selected){const res=await fetch('/add-to-cart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({product_id:parseInt(item.id),size:'M',color:'#C4A882'})});if(res.status===401){openLogin('login');return;}if(res.ok)added++;}showToast(added+' item'+(added>1?'s':'')+' added to cart! 🛒','t-terra');}
+</script>
+{% endblock %}

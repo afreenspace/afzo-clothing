@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}My Orders — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page">
+  <div style="max-width:860px;margin:0 auto;padding:56px 32px">
+    <h1 style="font-family:var(--font-serif);font-size:44px;color:var(--dark);margin-bottom:4px">My Orders</h1>
+    <p style="font-size:12px;color:var(--light);margin-bottom:40px">{{ orders|length }} order{{ 's' if orders|length!=1 else '' }} placed</p>
+    {% if orders %}
+      {% for o in orders %}
+      <div style="display:grid;grid-template-columns:80px 1fr auto;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid var(--border-lt)">
+        <div style="aspect-ratio:3/4;overflow:hidden;border-radius:3px;background:var(--beige)">{% if o.image %}<img src="{{ o.image }}" alt="{{ o.product_name }}" style="width:100%;height:100%;object-fit:cover">{% endif %}</div>
+        <div>
+          <div style="font-family:var(--font-serif);font-size:18px;color:var(--dark);margin-bottom:4px">{{ o.product_name }}</div>
+          <div style="font-size:11px;color:var(--light);margin-bottom:8px">{{ o.category|title }} · Size {{ o.size }} · Qty {{ o.qty }}</div>
+          <div style="font-size:14px;color:var(--terra);font-weight:500">₹{{ o.price*o.qty }}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:500;background:{% if o.status=='completed' %}rgba(39,174,96,0.1){% elif o.status=='shipped' %}rgba(52,152,219,0.1){% else %}rgba(243,156,18,0.1){% endif %};color:{% if o.status=='completed' %}#27ae60{% elif o.status=='shipped' %}#2980b9{% else %}#e67e22{% endif %}">{{ o.status }}</div>
+          <div style="font-size:10px;color:var(--light);margin-top:6px">{{ o.date }}</div>          {% if o.status in ['pending', 'completed'] and o.can_cancel %}
+          <button onclick="cancelOrder({{ o.id }})" style="display:block;margin-top:8px;padding:6px 12px;background:#e74c3c;color:#fff;border:none;border-radius:3px;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer">Cancel Order</button>
+          {% endif %}        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="text-align:center;padding:80px 0">
+        <div style="font-size:48px;margin-bottom:16px">📦</div>
+        <h2 style="font-family:var(--font-serif);font-size:36px;color:var(--dark);margin-bottom:10px">No orders yet</h2>
+        <p style="font-size:13px;color:var(--light);margin-bottom:28px">Your order history will appear here.</p>
+        <a href="/products" style="display:inline-block;padding:13px 32px;background:var(--terra);color:#fff;border-radius:3px;font-size:10px;letter-spacing:2.5px;text-transform:uppercase">Start Shopping</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+<script>
+function cancelOrder(orderId) {
+    if (confirm('Are you sure you want to cancel this order? Your payment will be refunded within 3-5 business days.')) {
+        fetch('/cancel-order/' + orderId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+</script>
+{% endblock %}

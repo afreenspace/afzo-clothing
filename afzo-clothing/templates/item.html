@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="item-layout">
+    <div class="item-gallery-side">
+      <div class="item-main-img" style="height:100%">
+        <img src="{{ product.image }}" alt="{{ product.name }}" id="mainProductImg" style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>
+    </div>
+    <div class="item-detail-side">
+      <div class="item-breadcrumb"><a href="/">Home</a> / <a href="/products">Shop</a> / <a href="/products?cat={{ product.category }}">{{ product.category|title }}</a> / {{ product.name }}</div>
+      <div class="item-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star" style="color:var(--border)">★</span><span class="item-reviews">4.0 · 128 reviews</span></div>
+      <h1 class="item-name">{{ product.name }}</h1>
+      <div class="item-brand">AFZO Collection · {{ product.category|title }}</div>
+      <div class="item-price">₹{{ product.price }}</div>
+      <div class="item-divider"></div>
+      <div class="opt-label">Size</div>
+      <div class="size-row">{% for size in product.sizes %}<button class="size-btn {% if loop.first %}active{% endif %}">{{ size }}</button>{% endfor %}</div>
+      <button class="add-btn" id="mainAddToCart" data-pid="{{ product.id }}">Add to Cart — ₹{{ product.price }}</button>
+      <button class="wish-btn" id="wishBtn" onclick="toggleWishlist({{ product.id }})">♡ &nbsp; Save to Wishlist</button>
+      <div class="item-divider"></div>
+      <div class="accordion">
+        <div class="acc-item open">
+          <button class="acc-head">About <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <div class="acc-body">{{ product.desc }}</div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head">Model Parameters <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <div class="acc-body">Model is 175cm and wears size S. True to size — order your usual size.</div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head">Measurements <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <div class="acc-body">XS: 80-84cm · S: 84-88cm · M: 88-94cm · L: 94-100cm · XL: 100-108cm</div>
+        </div>
+        <div class="acc-item">
+          <button class="acc-head">Composition <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+          <div class="acc-body">100% sustainably sourced natural fibres. Machine wash cold, lay flat to dry.</div>
+        </div>
+      </div>
+      <div class="meta-strips">
+        <div class="meta-strip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Free delivery on orders over ₹5,000</div>
+        <div class="meta-strip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Easy 30-day returns & exchanges</div>
+        <div class="meta-strip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Secure checkout — SSL encrypted</div>
+      </div>
+    </div>
+  </div>
+  {% if related %}
+  <section class="section" style="border-top:1px solid var(--border-lt)">
+    <span class="section-label">You May Also Like</span>
+    <div class="product-grid">
+      {% for p in related %}
+      <div class="product-card" data-item-link="{{ p.id }}">
+        <div class="product-card-img"><img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy"><button class="card-quick-add" data-quick-add="{{ p.id }}">Quick Add</button></div>
+        <div class="product-card-info"><div class="product-card-name">{{ p.name }}</div><div class="product-card-price">₹{{ p.price }}</div></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// single product image — no gallery script needed
+</script>
+{% endblock %}

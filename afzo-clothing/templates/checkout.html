@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Checkout — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="checkout-wrap">
+    <h1 class="checkout-title">Checkout</h1>
+    <div class="checkout-grid">
+      <div class="checkout-left">
+        <div class="checkout-section">
+          <h3>Contact Information</h3>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" value="{{ user.email }}" readonly>
+          </div>
+        </div>
+        <div class="checkout-section">
+          <h3>Discount Code</h3>
+          <div class="discount-row">
+            <input type="text" id="discountCode" placeholder="Enter discount code" style="flex:1">
+            <button type="button" id="applyDiscount" class="discount-btn">Apply</button>
+          </div>
+          <div id="discountMsg" style="margin-top:8px;font-size:12px"></div>
+        </div>
+        <div class="checkout-section">
+          <h3>Payment Method</h3>
+          <div class="payment-options">
+            <label class="payment-option active">
+              <input type="radio" name="payment" value="cod" checked>
+              <span>Cash on Delivery</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment" value="card">
+              <span>Credit/Debit Card</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment" value="upi">
+              <span>UPI Payment</span>
+            </label>
+          </div>
+        </div>
+        <div class="checkout-section payment-details" id="cardDetails" style="display:none">
+          <h3>Card Details</h3>
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="text" id="cvv" placeholder="123" maxlength="4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" id="cardholderName" placeholder="John Doe">
+          </div>
+        </div>
+        <div class="checkout-section payment-details" id="upiDetails" style="display:none">
+          <h3>UPI Payment</h3>
+          <div class="form-group">
+            <label>Select UPI Platform</label>
+            <div class="payment-platforms">
+              <label class="payment-option">
+                <input type="radio" name="upiPlatform" value="GPay" checked>
+                <span>GPay</span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="upiPlatform" value="PhonePe">
+                <span>PhonePe</span>
+              </label>
+              <label class="payment-option">
+                <input type="radio" name="upiPlatform" value="Paytm">
+                <span>Paytm</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>UPI ID</label>
+            <input type="text" id="upiId" placeholder="afzo@okhdfcbank">
+          </div>
+          <div class="form-note">This is a fake payment flow. Select your UPI app and enter the UPI ID shown to complete your order.</div>
+        </div>
+      </div>
+      <div class="checkout-right">
+        <div class="checkout-summary">
+          <h3>Order Summary</h3>
+          {% for item in items %}
+          <div class="summary-item">
+            <div class="summary-thumb"><img src="{{ item.product.image }}" alt="{{ item.product.name }}"></div>
+            <div class="summary-info">
+              <div class="summary-name">{{ item.product.name }}</div>
+              <div class="summary-meta">Size: {{ item.size }} · Qty: {{ item.qty }}</div>
+            </div>
+            <div class="summary-price">₹{{ item.product.price*item.qty }}</div>
+          </div>
+          {% endfor %}
+          <div class="summary-totals">
+            <div class="sum-row"><span>Subtotal</span><span id="subtotalValue">₹{{ total }}</span></div>
+            <div class="sum-row" id="discountRow" style="display:{{ 'flex' if discount > 0 else 'none' }}"><span>Discount (20%)</span><span id="discountValue">-₹{{ discount }}</span></div>
+            <div class="sum-row"><span>Shipping</span><span id="shippingValue">{% if final_total>=5000 %}Free{% else %}₹99{% endif %}</span></div>
+            <div class="sum-divider"></div>
+            <div class="sum-row total"><span>Total</span><span id="totalValue">₹{{ final_total+(0 if final_total>=5000 else 99) }}</span></div>
+          </div>
+          <button id="placeOrder" class="place-order-btn">Place Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('applyDiscount').addEventListener('click', function() {
+  const code = document.getElementById('discountCode').value.trim();
+  if (!code) return;
+  
+  fetch('/apply-discount', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({code: code})
+  })
+  .then(r => r.json())
+  .then(data => {
+    const msg = document.getElementById('discountMsg');
+    if (data.success) {
+      msg.innerHTML = '<span style="color:#22c55e">✓ 20% discount applied!</span>';
+      const discountRow = document.getElementById('discountRow');
+      const discountValue = document.getElementById('discountValue');
+      const shippingValue = document.getElementById('shippingValue');
+      const totalValue = document.getElementById('totalValue');
+      const subtotal = parseInt(document.getElementById('subtotalValue').textContent.replace(/\D/g, '')) || 0;
+      const discountAmount = data.discount_amount || Math.round(subtotal * 0.2);
+      const discountedTotal = subtotal - discountAmount;
+      const shipping = discountedTotal >= 5000 ? 0 : 99;
+      discountValue.textContent = '-₹' + discountAmount;
+      discountRow.style.display = 'flex';
+      shippingValue.textContent = shipping === 0 ? 'Free' : '₹' + shipping;
+      totalValue.textContent = '₹' + (discountedTotal + shipping);
+    } else {
+      msg.innerHTML = '<span style="color:#ef4444">✗ Invalid discount code</span>';
+    }
+  });
+});
+
+// Payment method selection
+document.querySelectorAll('input[name="payment"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('active'));
+    this.closest('.payment-option').classList.add('active');
+    
+    const cardDetails = document.getElementById('cardDetails');
+    const upiDetails = document.getElementById('upiDetails');
+    if (this.value === 'card') {
+      cardDetails.style.display = 'block';
+      upiDetails.style.display = 'none';
+    } else if (this.value === 'upi') {
+      cardDetails.style.display = 'none';
+      upiDetails.style.display = 'block';
+    } else {
+      cardDetails.style.display = 'none';
+      upiDetails.style.display = 'none';
+    }
+  });
+});
+
+// Format card number
+document.getElementById('cardNumber').addEventListener('input', function(e) {
+  let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+  let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+  e.target.value = formatted;
+});
+
+// Format expiry date
+document.getElementById('expiryDate').addEventListener('input', function(e) {
+  let value = e.target.value.replace(/\D/g, '');
+  if (value.length >= 2) {
+    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+  }
+  e.target.value = value;
+});
+
+document.getElementById('placeOrder').addEventListener('click', function() {
+  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+  
+  if (paymentMethod === 'card') {
+    // Validate card details
+    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+    const expiryDate = document.getElementById('expiryDate').value;
+    const cvv = document.getElementById('cvv').value;
+    const cardholderName = document.getElementById('cardholderName').value;
+    
+    if (!cardNumber || cardNumber.length < 13) {
+      showToast('Please enter a valid card number', 't-red');
+      return;
+    }
+    if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {
+      showToast('Please enter a valid expiry date (MM/YY)', 't-red');
+      return;
+    }
+    if (!cvv || cvv.length < 3) {
+      showToast('Please enter a valid CVV', 't-red');
+      return;
+    }
+    if (!cardholderName.trim()) {
+      showToast('Please enter cardholder name', 't-red');
+      return;
+    }
+    
+    // Show fake payment processing
+    showPaymentProcessing(paymentMethod);
+  } else if (paymentMethod === 'upi') {
+    const upiId = document.getElementById('upiId').value.trim();
+    const upiPlatform = document.querySelector('input[name="upiPlatform"]:checked').value;
+    if (!upiId || !upiId.includes('@')) {
+      showToast('Please enter a valid UPI ID', 't-red');
+      return;
+    }
+    showPaymentProcessing(paymentMethod, upiPlatform, upiId);
+  } else {
+    // COD - place order directly
+    placeOrder(paymentMethod);
+  }
+});
+
+function showPaymentProcessing(method, platform, upiId) {
+  const paymentLabel = method === 'upi' ? `UPI (${platform})` : 'Card';
+  const overlay = document.createElement('div');
+  overlay.id = 'paymentOverlay';
+  overlay.innerHTML = `
+    <div class="payment-modal">
+      <div class="payment-header">
+        <div class="payment-logo">AFZ<span>O</span></div>
+        <div class="payment-title">Secure ${paymentLabel} Payment</div>
+      </div>
+      <div class="payment-content">
+        <div class="payment-steps">
+          <div class="step active" id="step1">
+            <div class="step-icon">🔒</div>
+            <div class="step-text">Authenticating...</div>
+          </div>
+          <div class="step" id="step2">
+            <div class="step-icon">💳</div>
+            <div class="step-text">Processing payment...</div>
+          </div>
+          <div class="step" id="step3">
+            <div class="step-icon">✅</div>
+            <div class="step-text">Confirming order...</div>
+          </div>
+        </div>
+        <div class="payment-spinner"></div>
+        <div class="payment-message" id="paymentMessage">Please wait while we process your payment securely...</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  setTimeout(() => {
+    document.getElementById('step1').classList.add('completed');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('paymentMessage').textContent = method === 'upi' ? `Pay via ${platform} using UPI ID ${upiId}` : 'Processing your payment...';
+  }, 1500);
+  
+  setTimeout(() => {
+    document.getElementById('step2').classList.add('completed');
+    document.getElementById('step3').classList.add('active');
+    document.getElementById('paymentMessage').textContent = 'Almost done...';
+  }, 3000);
+  
+  setTimeout(() => {
+    document.getElementById('step3').classList.add('completed');
+    document.getElementById('paymentMessage').textContent = 'Payment successful! 🎉';
+    setTimeout(() => {
+      overlay.remove();
+      placeOrder(method);
+    }, 1000);
+  }, 4500);
+}
+
+function placeOrder(paymentMethod = 'cod') {
+  fetch('/place-order', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({payment_method: paymentMethod})
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      const methodLabel = paymentMethod === 'upi' ? 'UPI payment' : paymentMethod === 'card' ? 'Card payment' : 'Order';
+      showToast(`${methodLabel} successful! Thank you for shopping with AFZO. 🛍️`, 't-green');
+      setTimeout(() => location.href = '/orders', 2500);
+    } else {
+      showToast('Error: ' + (data.error || 'Something went wrong'), 't-red');
+    }
+  })
+  .catch(() => {
+    showToast('Network error. Please try again.', 't-red');
+  });
+}
+</script>
+{% endblock %}
