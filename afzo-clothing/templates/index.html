@@ -4,7 +4,7 @@
 <div class="page">
   <section class="hero">
     <div class="hero-left">
-      <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800&q=90" alt="Fashion Left">
+      <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=1200&q=90" alt="Fashion Left" loading="lazy" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/products/top1.jpg') }}'">
     </div>
     <div class="hero-centre">
       <video autoplay loop muted playsinline id="heroVideo">
@@ -12,7 +12,7 @@
       </video>
     </div>
     <div class="hero-right">
-      <img src="https://images.unsplash.com/photo-1548624313-0396c75e4b1a?w=800&q=90" alt="Fashion Right">
+      <img src="https://images.unsplash.com/photo-1548624313-0396c75e4b1a?w=1200&q=90" alt="Fashion Right" loading="lazy" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/products/summer1.jpg') }}'">
     </div>
   </section>
   <section class="section">
@@ -25,10 +25,10 @@
     </div>
     <div class="product-grid">
       {% for p in trending %}
-      <div class="product-card fu" data-item-link="{{ p.id }}" style="animation-delay:{{ loop.index0*0.09 }}s">
+      <div class="product-card fu" data-item-link="{{ p.id }}" data-delay="{{ loop.index0 * 0.09 }}">
         <div class="product-card-img">
           <img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy">
-          <button class="card-heart" data-quick-add="{{ p.id }}">
+          <button class="card-heart" data-product-id="{{ p.id }}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </button>
           <button class="card-quick-add" data-quick-add="{{ p.id }}">Quick Add</button>
@@ -103,6 +103,10 @@ if (vid) {
   }, { threshold: 0.2 });
   vidObs.observe(vid);
 
+  document.querySelectorAll('.product-card[data-delay]').forEach(card => {
+    card.style.animationDelay = `${card.dataset.delay}s`;
+  });
+
   // Stop when leaving page (clicking links / navigating away)
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -112,9 +116,20 @@ if (vid) {
     }
   });
 
-  // Stop on any link click
+  // Stop on any navigation link click, but ignore UI anchors like chatbot open and on-page hash links
   document.querySelectorAll('a').forEach(a => {
-    a.addEventListener('click', () => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href') || '';
+      if (
+        a.classList.contains('chatbot-link') ||
+        href === '#' ||
+        href.startsWith('javascript:') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        href.startsWith('#')
+      ) {
+        return;
+      }
       vid.pause();
       vid.src = '';
     });

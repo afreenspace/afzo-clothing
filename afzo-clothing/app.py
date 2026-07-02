@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 import random
 
 app = Flask(__name__)
-app.secret_key = 'afzo_secret_key_2024'
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'afzo_secret_key_2024')
 
 DB = 'database.db'
-ADMIN_EMAIL = 'admin@afzo.com'
-ADMIN_PASSWORD = 'afzo2024'
-DISCOUNT_CODE = 'AFZO20'
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'admin@afzo.com')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'afzo2024')
+DISCOUNT_CODE = os.environ.get('DISCOUNT_CODE', 'AFZO20')
 
 PRODUCTS = [
     {"id":1,"name":"Linen Summer Dress","price":2499,"category":"summer","stock":14,"image":"/static/images/products/top5.jpg","desc":"Effortless linen blend, perfect for warm afternoons. Relaxed silhouette with adjustable waist tie.","colors":["#C4A882","#E8D5C0","#8B7355"],"sizes":["XS","S","M","L","XL"],"outfit_type":"top"},
@@ -354,6 +354,9 @@ PRODUCTS = [
     {"id":83,"name":"Plum Saffiano Crossbody Bag","price":999,"category":"accessories","stock":20,"image":"/static/images/products/acc7.jpg","desc":"Cosy ribbed knit bucket hat in warm cream. A Korean street style essential for autumn and winter. Pairs beautifully with oversized coats, hoodies and wide-leg trousers.","colors":["#F5F0EB","#E8D5C0","#C4A882","#2C2C2C"],"sizes":["One Size"],"outfit_type":"accessory"},
     {"id":84,"name":"Neutral Satin Scrunchie Set (3pc)","price":299,"category":"accessories","stock":14,"image":"/static/images/products/acc8.jpg","desc":"Slim cognac leather belt with a minimal gold buckle. The finishing touch for blazers, wrap dresses and high-waist trousers. Vegetable-tanned leather that ages with character.","colors":["#8B4513","#2C2C2C","#C4A882"],"sizes":["XS","S","M","L","XL"],"outfit_type":"accessory"},
     {"id":85,"name":"Ivory Pearl Headband Set","price":499,"category":"accessories","stock":12,"image":"/static/images/products/acc9.jpg","desc":"Luxurious pure silk square scarf with an original botanical print in terra and sage. Wear as a neckerchief, headband, bag accessory or wrist wrap. Arrives in a gift-ready box.","colors":["#C8775A","#8FAF88","#F5F0EB"],"sizes":["One Size"],"outfit_type":"accessory"},
+
+    
+
 ]
 
 def init_db():
@@ -574,6 +577,10 @@ def toggle_wishlist():
         cur.execute('INSERT INTO wishlist (user_id,product_id) VALUES (?,?)',(session['user']['id'],pid))
         con.commit(); con.close()
         return jsonify({'status':'added','msg':'Added to wishlist ♡'})
+
+@app.route('/chatbot')
+def chatbot():
+    return render_template('chatbot.html', user=session.get('user'))
 
 @app.route('/orders')
 def order_history():

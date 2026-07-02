@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}AI Chatbot — AFZO Clothing{% endblock %}
+{% block content %}
+<div class="page" style="padding:84px 0 40px;min-height:calc(100vh - 160px);background:var(--page-bg);">
+  <div style="max-width:960px;margin:0 auto;">
+    <div style="background:#fff;border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,0.08);padding:42px;">
+      <h1 style="font-family:var(--font-serif);font-size:44px;color:var(--dark);margin-bottom:12px;">AI Style Assistant</h1>
+      <p style="font-size:16px;color:var(--mid);line-height:1.8;margin-bottom:32px;max-width:760px;">Chat with Zara for outfit suggestions, event looks, styling advice, and personalized AFZO product recommendations. Your AI assistant is ready to help you find the perfect look.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:flex-start;">
+        <button onclick="toggleChat()" class="f-submit" style="padding:14px 24px;font-size:14px;">Open Chat</button>
+        <a href="/products" class="f-submit" style="background:transparent;color:var(--terra);border:1px solid var(--terra);">Browse Products</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>document.addEventListener('DOMContentLoaded', () => { toggleChat(); });</script>
+{% endblock %}

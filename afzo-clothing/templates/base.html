@@ -23,7 +23,7 @@
     <a href="/collections" class="nav-item">Collections</a>
     <a href="/feedback" class="nav-item" style="color:var(--terra)">✦ Feedback</a>
     <a href="/outfit-builder" class="nav-item" style="color:var(--terra)" {% if not user %}onclick="event.preventDefault();openLogin('login')"{% endif %}>✦ Outfit Builder</a>
-    <a href="#" class="nav-item" style="color:var(--terra)" onclick="toggleChat()">✦ AI Chatbot</a>
+    <a href="#" class="nav-item chatbot-link" style="color:var(--terra)">✦ AI Chatbot</a>
   </div>
   <div class="nav-right">
     <button class="dark-toggle" id="darkToggleBtn" onclick="toggleDark()" title="Toggle dark mode">
@@ -69,6 +69,7 @@
     <a href="/products?cat=accessories" class="drawer-link">Accessories</a>
     <a href="/collections" class="drawer-link">Collections</a>
     <a href="/outfit-builder" class="drawer-link" style="color:var(--terra)">✦ Outfit Builder</a>
+    <a href="#" class="drawer-link chatbot-link" style="color:var(--terra)">✦ AI Chatbot</a>
     {% if user %}
     <a href="/orders"  class="drawer-link">My Orders</a>
     <a href="/wishlist" class="drawer-link">Wishlist</a>
@@ -256,6 +257,7 @@
       <button onclick="quickReply('Office 💼')">Office 💼</button>
       <button onclick="quickReply('Casual Day 🌸')">Casual Day 🌸</button>
       <button onclick="quickReply('Ethnic Look 🪡')">Ethnic Look 🪡</button>
+      <button onclick="cancelChat()">Cancel</button>
     </div>
   </div>
 
@@ -453,10 +455,54 @@ function toggleChat() {
   }
 }
 
+function openChatPopup() {
+  const popup = document.getElementById('chatbotPopup');
+  if (!popup.classList.contains('open')) {
+    toggleChat();
+  } else {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function setupChatLinks() {
+  document.querySelectorAll('a.chatbot-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (this.closest('.drawer-panel')) {
+        closeDrawer();
+      }
+      openChatPopup();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', setupChatLinks);
+
+document.addEventListener('click', function(event) {
+  const popup = document.getElementById('chatbotPopup');
+  const chatbotBtn = document.getElementById('chatbotBtn');
+  const target = event.target;
+
+  if (!popup.classList.contains('open')) return;
+  if (popup.contains(target) || chatbotBtn.contains(target) || target.closest('.chatbot-link')) return;
+
+  popup.classList.remove('open');
+});
+
 function quickReply(text) {
   document.getElementById('quickReplies')?.remove();
   addMessage(text, 'user');
   setTimeout(() => respond(text), 600);
+}
+
+function cancelChat() {
+  document.getElementById('quickReplies')?.remove();
+  addMessage('Cancel', 'user');
+  setTimeout(() => {
+    removeTyping();
+    addMessage("Okay, I've cancelled this chat. If you'd like to start again, just type a new message or click a quick reply.", 'bot');
+    document.getElementById('chatInput').value = '';
+  }, 600);
 }
 
 function sendChat() {
@@ -527,6 +573,8 @@ function respond(text) {
     reply = "You're so welcome! 🤍 Come back anytime you need styling help. You're going to look absolutely amazing! ✨";
   } else if (t.includes('photo') || t.includes('picture') || t.includes('image') || t.includes('upload')) {
     reply = "You can upload your photo using the 📷 icon below! Share your current outfit or body type and I'll suggest what styles from AFZO would suit you best! 🌸";
+  } else if (t.includes('cancel') || t.includes('stop') || t.includes('exit') || t.includes('never mind')) {
+    reply = "No problem — I've cancelled this chat. If you'd like styling help again, just type a new message or choose another quick reply!";
   } else {
     reply = "That sounds fun! 😊 Tell me more about the occasion — is it daytime or evening? Formal or casual? I'll find the perfect AFZO outfit for you! 💕";
   }

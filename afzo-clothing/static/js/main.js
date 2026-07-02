@@ -201,6 +201,15 @@ document.querySelectorAll('[data-item-link]').forEach(card => {
   card.style.cursor = 'pointer';
 });
 
+document.querySelectorAll('.card-heart').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const pid = parseInt(btn.dataset.productId || btn.dataset.quickAdd || btn.closest('[data-product-id]')?.dataset.productId || btn.closest('[data-quick-add]')?.dataset.quickAdd);
+    if (!pid) return;
+    toggleWishlist(pid);
+  });
+});
+
 // ── Wishlist Toggle ─────────────────────────────────────────
 async function toggleWishlist(pid) {
   const loggedIn = document.body.dataset.loggedIn === 'true';

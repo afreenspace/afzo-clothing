@@ -290,14 +290,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   object-position: center top;
   display: block;
 }
-.hero-centre::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 60%, rgba(42,34,32,0.25));
-  pointer-events: none;
-  z-index: 1;
-}
 
 /* ── Section ──────────────────────────────────────────────── */
 .section {
