@@ -27,6 +27,3 @@ UI UPGRADES:
 ✅ Smooth popup transitions
 ✅ Intersection Observer fade-up animations
 ✅ Payment processing modal with step-by-step animation
-
-NOTE: Place your product images in static/images/products/
-      and your hero video at static/videos/hero.mp4
